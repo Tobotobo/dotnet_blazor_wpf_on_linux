@@ -1,0 +1,14 @@
+<h1>カウンター</h1>
+
+<p>現在のカウント: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">加算</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
