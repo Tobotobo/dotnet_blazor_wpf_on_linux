@@ -197,3 +197,9 @@ Resources.Add("services", serviceCollection.BuildServiceProvider());
 ```sh
 dotnet publish
 ```
+
+```xml
+<ItemGroup>
+  <EmbeddedResource Include="wwwroot\**\*" />
+</ItemGroup>
+```
