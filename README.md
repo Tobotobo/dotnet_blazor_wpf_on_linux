@@ -33,7 +33,7 @@ https://learn.microsoft.com/ja-jp/aspnet/core/blazor/hybrid/tutorials/wpf?view=a
 dotnet new wpf
 ```
 
-プロジェクトファイル( dotnet_blazor_wpf_on_linux.csproj ) の PropertyGroup に以下を追加し restore を実行すｒ。
+プロジェクトファイル( dotnet_blazor_wpf_on_linux.csproj ) の PropertyGroup に以下を追加し restore を実行
 ```xml
 <EnableWindowsTargeting>true</EnableWindowsTargeting>
 ```
