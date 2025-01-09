@@ -2,13 +2,19 @@
 
 <p>現在のカウント: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">加算</button>
+<button @onclick="IncrementCount">加算</button>
+<button @onclick="DecrementCount">減算</button>
 
 @code {
     private int currentCount = 0;
 
     private void IncrementCount()
     {
-        currentCount++;
+        currentCount += 1;
+    }
+
+    private void DecrementCount()
+    {
+        currentCount -= 1;
     }
 }

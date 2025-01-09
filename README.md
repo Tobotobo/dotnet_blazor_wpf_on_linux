@@ -1,6 +1,15 @@
 # dotnet_blazor_wpf_on_linux
 
 ## 概要
+* WPF の UI に BlazorWebView を使用したカウンタアプリのサンプルプログラム
+* 公式のサンプルを元にしているが以下の差異がある
+  * Visual Studio Code + dotnet CLI を前提としている
+  * exe 一つで配布できるよう publish の結果が exe 一つのみになるよう設定している
+  * wwwroot なども exe に埋め込まれる
+  * Bootstrap を利用しない
+  * BlazorWebView の配置を XAML を使わずコードビハインドで完結させている 
+
+※on_linux としたが、Windows 環境でも問題ない
 
 Windows Presentation Foundation (WPF) の Blazor アプリを構築する ※.NET 8  
 https://learn.microsoft.com/ja-jp/aspnet/core/blazor/hybrid/tutorials/wpf?view=aspnetcore-8.0  
@@ -13,7 +22,7 @@ https://learn.microsoft.com/ja-jp/aspnet/core/blazor/hybrid/tutorials/wpf?view=a
 
 ## 詳細
 
-※ Linux 環境に WPF のテンプレートをインストールする手順については
+※ Linux 環境に WPF のテンプレートをインストールする手順など、Linux 環境で WPF の開発をする基本的なことについては [dotnet_wpf_on_linux](https://github.com/Tobotobo/dotnet_wpf_on_linux) を参照
 
 ### WPF プロジェクトの作成
 
@@ -21,7 +30,7 @@ https://learn.microsoft.com/ja-jp/aspnet/core/blazor/hybrid/tutorials/wpf?view=a
 dotnet new wpf
 ```
 
-プロジェクトファイル( dotnet_blazor_wpf_on_linux.csproj ) の PropertyGroup に以下を追加する。
+プロジェクトファイル( dotnet_blazor_wpf_on_linux.csproj ) の PropertyGroup に以下を追加し restore を実行すｒ。
 ```xml
 <EnableWindowsTargeting>true</EnableWindowsTargeting>
 ```
@@ -32,7 +41,18 @@ dotnet restore
 
 ### Blazor を組み込む
 
-Microsoft.AspNetCore.Components.WebView.Wpf パッケージをプロジェクトに追加
+#### 手順概要
+1. Microsoft.AspNetCore.Components.WebView.Wpf パッケージをプロジェクトに追加
+2. プロジェクトファイル( dotnet_blazor_wpf_on_linux.csproj ) に記述の追加・変更
+3. _Imports.razor を作成
+4. wwwroot フォルダを作成
+5. wwwroot/index.html を作成
+6. wwwroot/css フォルダを作成
+7. wwwroot/css/app.css を作成
+8. Counter.razor を作成
+9. MainWindow.xaml.cs に記述を追加
+
+#### 1. Microsoft.AspNetCore.Components.WebView.Wpf パッケージをプロジェクトに追加
 
 https://www.nuget.org/packages/Microsoft.AspNetCore.Components.WebView.Wpf
 ```sh
@@ -41,31 +61,46 @@ dotnet add package Microsoft.AspNetCore.Components.WebView.Wpf --version 8.0.100
 ※9.0 以降では Microsoft.Extensions.DependencyInjection が含まれていないのか参照エラーになる。  
 　また、BlazorWebView も存在しないエラーになる。要確認  
 
-プロジェクトファイル( dotnet_blazor_wpf_on_linux.csproj ) の Sdk を以下に変更する。
+#### 2. プロジェクトファイル( dotnet_blazor_wpf_on_linux.csproj ) に以下の追加・変更
+
+冒頭の Sdk を以下に変更
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 ```
 
-プロジェクトファイル( dotnet_blazor_wpf_on_linux.csproj ) の PropertyGroup に以下を追加する。
+PropertyGroup に以下を追加
 ```xml
 <RootNamespace>dotnet_blazor_wpf_on_linux</RootNamespace>
+
+<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+<PublishSingleFile>true</PublishSingleFile>
+<SelfContained>true</SelfContained>
+<DebugType>embedded</DebugType>
+<!-- WPF は 2025/1/8 現在 Trimming 非対応 ※https://github.com/dotnet/wpf/issues/3811 -->
+<!-- <PublishTrimmed>true</PublishTrimmed> -->
+<!-- <TrimMode>partial</TrimMode> -->
+<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+<PublishReadyToRun>true</PublishReadyToRun>
 ```
 
-_Imports.razor を作成する
+新たに ItemGroup を作成し以下を追加
+```xml
+<EmbeddedResource Include="wwwroot\**\*" />
+<Content Remove="wwwroot\**" />
+<Content Remove="global.json" />
+```
+
+#### 3. _Imports.razor を作成
 ```razor
 @using Microsoft.AspNetCore.Components.Web
 ```
 
-wwwroot フォルダを作成する
+#### 4. wwwroot フォルダを作成
 ```
 mkdir wwwroot
 ```
 
-wwwroot/index.html を作成する。  
-留意点
-* html lang を ja に変更 ※ブラウザで開いた時に、いちいち翻訳するか表示されるため
-* `<link href="XXXXXX.styles.css" rel="stylesheet" />` の XXXXXX は先ほどの `RootNamespace` に合わせる
-* title はお好みで変更
+#### 5. wwwroot/index.html を作成 
 ```html
 <!DOCTYPE html>
 <html lang="ja">
@@ -73,11 +108,8 @@ wwwroot/index.html を作成する。
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dotnet_blazor_wpf_on_linux</title>
     <base href="/" />
-    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
-    <link href="dotnet_blazor_wpf_on_linux.styles.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -94,43 +126,13 @@ wwwroot/index.html を作成する。
 </html>
 ```
 
-wwwroot/css フォルダを作成する。
+#### 6. wwwroot/css フォルダを作成
 ```
 mkdir wwwroot/css
 ```
 
-wwwroot/css/app.css を作成する。
+#### 7. wwwroot/css/app.css を作成
 ```css
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-h1:focus {
-    outline: none;
-}
-
-a, .btn-link {
-    color: #0071c1;
-}
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
-}
-
-.invalid {
-    outline: 1px solid red;
-}
-
-.validation-message {
-    color: red;
-}
-
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
@@ -151,55 +153,82 @@ a, .btn-link {
     }
 ```
 
-wwwroot/css/bootstrap.min.css を格納する ※省略
-
-Counter.razor を作成する
+#### 8. Counter.razor を作成
 ```html
 <h1>カウンター</h1>
 
 <p>現在のカウント: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">加算</button>
+<button @onclick="IncrementCount">加算</button>
+<button @onclick="DecrementCount">減算</button>
 
 @code {
     private int currentCount = 0;
 
     private void IncrementCount()
     {
-        currentCount++;
+        currentCount += 1;
+    }
+
+    private void DecrementCount()
+    {
+        currentCount -= 1;
     }
 }
 ```
 
-MainWindow.xaml 
-```xml
-xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
-```
-```xml
-        <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{DynamicResource services}">
-            <blazor:BlazorWebView.RootComponents>
-                <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Counter}" />
-            </blazor:BlazorWebView.RootComponents>
-        </blazor:BlazorWebView>
-```
+#### 9. MainWindow.xaml.cs に以下を追加
 
-MainWindow.xaml.cs
+冒頭の using に以下を追加
 ```cs
+using Microsoft.AspNetCore.Components.WebView.Wpf;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 ```
 
+MainWindow クラス内に以下のプライベートクラスを追加
+```cs
+// 埋め込みリソースから wwwroot を取得するカスタム BlazorWebView
+private class CustomBlazorWebView : BlazorWebView {
+    public override IFileProvider CreateFileProvider(string _)
+    {
+        // 埋め込みリソースから wwwroot を提供
+        EmbeddedFileProvider embeddedFileProvider = new EmbeddedFileProvider(
+            Assembly.GetExecutingAssembly(),
+            $"{typeof(App).Namespace}.wwwroot");
+        return embeddedFileProvider;
+    }
+}
+```
+
+MainWindow コンストラクタの InitializeComponent() の後に以下を追加
 ```cs
 var serviceCollection = new ServiceCollection();
 serviceCollection.AddWpfBlazorWebView();
-Resources.Add("services", serviceCollection.BuildServiceProvider());
+serviceCollection.AddBlazorWebViewDeveloperTools(); // 開発者ツールを有効にする ※F12
+
+// カスタム BlazorWebView をウインドウのメインコンテンツに設定
+CustomBlazorWebView customBlazorWebView = new() {
+    HostPage="wwwroot/index.html",
+    Services=serviceCollection.BuildServiceProvider(),
+};
+customBlazorWebView.RootComponents.Add(new RootComponent
+{
+    Selector = "#app",
+    ComponentType = typeof(Counter)
+});
+this.Content = customBlazorWebView;
 ```
 
+### 実行
 ```sh
-dotnet publish
+dotnet run
 ```
+![alt text](docs/images/image.png)
 
-```xml
-<ItemGroup>
-  <EmbeddedResource Include="wwwroot\**\*" />
-</ItemGroup>
+### 実行ファイル( exe )生成
+```sh
+./cmd/build.sh
 ```
+※プロジェクト直下の publish フォルダ内に exe (約180MB) が生成される  
+※Windows 環境の場合は Git-Bash で実行する  

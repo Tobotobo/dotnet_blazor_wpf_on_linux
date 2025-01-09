@@ -7,9 +7,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
     <RootNamespace>dotnet_blazor_wpf_on_linux</RootNamespace>
 
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
@@ -21,9 +22,11 @@
     <PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
 
-  <!-- <ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="wwwroot\**\*" />
-  </ItemGroup> -->
+    <Content Remove="wwwroot\**" />
+    <Content Remove="global.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.100" />
