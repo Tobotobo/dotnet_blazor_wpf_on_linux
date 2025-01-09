@@ -14,6 +14,9 @@
 Windows Presentation Foundation (WPF) の Blazor アプリを構築する ※.NET 8  
 https://learn.microsoft.com/ja-jp/aspnet/core/blazor/hybrid/tutorials/wpf?view=aspnetcore-8.0  
 
+![alt text](docs/images/image-1.png)  
+![alt text](docs/images/image.png)  
+
 ## 環境
 * Docker version 26.1.3, build b72abbb
 * mcr.microsoft.com/dotnet/sdk:8.0
